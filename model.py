@@ -145,9 +145,9 @@ def main():
 
 	
 	# To test without gpu
-	nb_epoch = 1
-	batch_size = 5
-	samples_per_epoch = 10
+	#nb_epoch = 1
+	#batch_size = 5
+	#samples_per_epoch = 10
 
 	## Get model and start training
 	model = getCNN()
