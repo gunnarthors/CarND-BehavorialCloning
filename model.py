@@ -19,10 +19,8 @@ import matplotlib.pyplot as plt
 # https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/
 def getCNN():
 	
-
-
 	model = Sequential()
-	
+
 	# Start with batch normalization
 	model.add(BatchNormalization(epsilon=1e-06, mode=0, 
                     axis=-1, momentum=0.99, 
@@ -147,12 +145,18 @@ def main():
 
 	
 	# To test without gpu
-	#nb_epoch = 1
-	#batch_size = 5
-	#samples_per_epoch = 10
+	nb_epoch = 1
+	batch_size = 5
+	samples_per_epoch = 10
 
 	## Get model and start training
 	model = getCNN()
+
+		# Load weights if they exists.
+	if os.path.isfile('model.h5'):
+		print('Loading weights!')
+		model.load_weights('model.h5')
+	
 	history = model.fit_generator(
 		generateTrainingBatch(training_data, batch_size), 
 		samples_per_epoch=samples_per_epoch,

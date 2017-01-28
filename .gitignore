@@ -1,6 +1,7 @@
 # Extra stuff
 /data
 .DS_Store
+model.h5
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
