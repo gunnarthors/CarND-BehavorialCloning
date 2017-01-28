@@ -13,7 +13,7 @@ from flask import Flask, render_template
 from io import BytesIO
 
 from keras.models import model_from_json
-from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array
+from keras.preprocessing.image import ImageDataGenerator, array_to_img, img_to_array, load_img
 
 # Fix error with Keras and TensorFlow
 import tensorflow as tf
@@ -25,8 +25,13 @@ app = Flask(__name__)
 model = None
 prev_image_array = None
 
+def reshapeImage(image):
+    reshapedImage = np.ndarray((66,200,3))
+    return reshapedImage
+
 @sio.on('telemetry')
 def telemetry(sid, data):
+    print("Hello telemetry")
     # The current steering angle of the car
     steering_angle = data["steering_angle"]
     # The current throttle of the car
@@ -36,8 +41,10 @@ def telemetry(sid, data):
     # The current image from the center camera of the car
     imgString = data["image"]
     image = Image.open(BytesIO(base64.b64decode(imgString)))
-    image_array = np.asarray(image)
+    #image_array = np.asarray(image)
+    image_array = reshapeImage(image)
     transformed_image_array = image_array[None, :, :, :]
+    print(np.shape(transformed_image_array))
     # This model currently assumes that the features of the model are just the images. Feel free to change this.
     steering_angle = float(model.predict(transformed_image_array, batch_size=1))
     # The driving model currently just outputs a constant throttle. Feel free to edit this.
@@ -58,6 +65,12 @@ def send_control(steering_angle, throttle):
     'throttle': throttle.__str__()
     }, skip_sid=True)
 
+#def send_control(steering_angle, throttle):
+#    print("sendcontrol: \nsteering angle: {}, throttle: {}".format(steering_angle, throttle))
+#    sio.emit("steer", data={
+#    'steering_angle': str(steering_angle).replace('.', ','),
+#    'throttle': str(throttle).replace('.', ',')
+#    }, skip_sid=True)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Remote Driving')
@@ -68,10 +81,11 @@ if __name__ == '__main__':
         # NOTE: if you saved the file by calling json.dump(model.to_json(), ...)
         # then you will have to call:
         #
-        #   model = model_from_json(json.loads(jfile.read()))\
+        model = model_from_json(json.loads(jfile.read()))
+        print("Model loaded")
         #
         # instead.
-        model = model_from_json(jfile.read())
+        #model = model_from_json(jfile.read())
 
 
     model.compile("adam", "mse")
