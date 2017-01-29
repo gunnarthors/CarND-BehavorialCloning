@@ -31,7 +31,6 @@ def reshapeImage(image):
 
 @sio.on('telemetry')
 def telemetry(sid, data):
-    print("Hello telemetry")
     # The current steering angle of the car
     steering_angle = data["steering_angle"]
     # The current throttle of the car
@@ -48,7 +47,7 @@ def telemetry(sid, data):
     # This model currently assumes that the features of the model are just the images. Feel free to change this.
     steering_angle = float(model.predict(transformed_image_array, batch_size=1))
     # The driving model currently just outputs a constant throttle. Feel free to edit this.
-    throttle = 0.2
+    throttle = 0.1
     print(steering_angle, throttle)
     send_control(steering_angle, throttle)
 

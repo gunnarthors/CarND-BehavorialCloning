@@ -26,44 +26,44 @@ def getCNN():
 
 	# Layer 1 - Convolutional
 	model.add(Convolution2D(24, 5, 5, border_mode='valid', subsample=(2,2)))
-	model.add(Activation('relu'))
 	model.add(BatchNormalization(epsilon=1e-06, mode=0, 
                    axis=-1, momentum=0.99, 
                    weights=None, beta_init='zero', 
                    gamma_init='one'))
+	model.add(Activation('relu'))
 
 	# Layer 2 - Convolutional
 	model.add(Convolution2D(36, 5, 5, border_mode='valid', subsample=(2,2)))
-	model.add(Activation('relu'))
 	model.add(BatchNormalization(epsilon=1e-06, mode=0, 
                    axis=-1, momentum=0.99, 
                    weights=None, beta_init='zero', 
                    gamma_init='one'))
+	model.add(Activation('relu'))
 
 	# Layer 3 - Convolutional
 	model.add(Convolution2D(48, 5, 5, border_mode='valid', subsample=(2,2)))
 	model.add(Activation('relu'))
-	model.add(BatchNormalization(epsilon=1e-06, mode=0, 
-                   axis=-1, momentum=0.99, 
-                   weights=None, beta_init='zero', 
-                   gamma_init='one'))
+	#model.add(BatchNormalization(epsilon=1e-06, mode=0, 
+    #               axis=-1, momentum=0.99, 
+    #               weights=None, beta_init='zero', 
+    #               gamma_init='one'))
 
 
 	# Layer 4 - Convolutional
 	model.add(Convolution2D(64, 3, 3, border_mode='valid', subsample=(1,1)))
 	model.add(Activation('relu'))
-	model.add(BatchNormalization(epsilon=1e-06, mode=0, 
-                   axis=-1, momentum=0.99, 
-                   weights=None, beta_init='zero', 
-                   gamma_init='one'))
+	#model.add(BatchNormalization(epsilon=1e-06, mode=0, 
+    #               axis=-1, momentum=0.99, 
+    #               weights=None, beta_init='zero', 
+    #               gamma_init='one'))
 
 	# Layer 4 - Convolutional
 	model.add(Convolution2D(64, 3, 3, border_mode='valid', subsample=(1,1)))
 	model.add(Activation('relu'))
-	model.add(BatchNormalization(epsilon=1e-06, mode=0, 
-                   axis=-1, momentum=0.99, 
-                   weights=None, beta_init='zero', 
-                   gamma_init='one'))
+	#model.add(BatchNormalization(epsilon=1e-06, mode=0, 
+    #               axis=-1, momentum=0.99, 
+    #               weights=None, beta_init='zero', 
+    #               gamma_init='one'))
 
 	#  Flatten
 	model.add(Flatten())
@@ -101,8 +101,9 @@ def generateTrainingBatch(data, batch_size):
 	counter = 1
 	while 1:
 		for b in range(batch_size):
-			batch_x[b] = getImageToBatch(data[b*1][0])
-			batch_y[b] = float(data[b*1][1])
+			if float(data[b*1][1]) != 0.0 and np.random.randint(2) != 0: # Throw away some driving straight images
+				batch_x[b] = getImageToBatch(data[b*1][0])
+				batch_y[b] = float(data[b*1][1])
 
 		# Reset counter if needed. else increase by one
 		if counter * batch_size  >= len(data) - 2:
@@ -156,7 +157,8 @@ def main():
 	history = model.fit_generator(
 		generateTrainingBatch(training_data, batch_size), 
 		samples_per_epoch=samples_per_epoch,
-		nb_epoch=nb_epoch)
+		nb_epoch=nb_epoch,
+		validation_split=0.15)
 	
 
 	# Save model.
