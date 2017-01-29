@@ -21,15 +21,9 @@ import matplotlib.pyplot as plt
 def getCNN():
 	
 	model = Sequential()
-	
-	def resize(image):
-		import tensorflow as tf
-		return tf.image.resize_images(image, (66, 200))
-	# Resize Image
-	model.add(Lambda(resize, input_shape=(160,320, 3)))
 
 	# Noramlization
-	model.add(Lambda(normalize)) #, input_shape=(66, 200, 3)
+	model.add(Lambda(normalize, input_shape=(66, 200, 3)))
 
 	# Layer 1 - Convolutional
 	model.add(Convolution2D(24, 5, 5, border_mode='valid', subsample=(2,2)))
@@ -83,16 +77,15 @@ def normalize(image):
 
 
 def generateTrainingBatch(data, batch_size):
-	s = 0
 	while 1:	
-	 	batch_x = np.zeros((batch_size, 160, 320, 3)) # 66, 200
+	 	batch_x = np.zeros((batch_size, 66, 200, 3)) # 160, 320
 	 	batch_y = np.zeros(batch_size)
 	 	i = 0
 	 	while i < batch_size:
 	 		rint = np.random.randint(len(data)-1)
 	 		if -0.15 < float(data[rint][1]) < 0.15:
 	 			# Throw away some driving straight images. Only get approx 10% of them
-	 			if np.random.randint(10) == 0:
+	 			if np.random.randint(10) == 1:
 	 				batch_x[i] = getImageToBatch(data[rint][0])
 	 				batch_y[i] = float(data[rint][1])
 	 				i += 1
@@ -100,19 +93,15 @@ def generateTrainingBatch(data, batch_size):
 	 			batch_x[i] = getImageToBatch(data[rint][0])
 	 			batch_y[i] = float(data[rint][1])
 	 			i += 1
-	 		
-	 		# Resetting data counter if bigger than data
-	 		#if s >= len(data) - 1:
-	 		#	s = 0
-	 		#else:
-	 		#	s += 1
 
 	 	datagen = ImageDataGenerator(
-	    	featurewise_center=True,
-	    	featurewise_std_normalization=True,
-	    	rotation_range=10,
-	    	width_shift_range=0.2,
-	    	height_shift_range=0.2)
+	    	#featurewise_center=True,
+	    	#featurewise_std_normalization=True,
+	    	#rotation_range=10,
+	    	#width_shift_range=0.2,
+	    	#height_shift_range=0.2
+	    	)
+
 
 	 	datagen.fit(batch_x)
 	 	yield datagen.flow(batch_x, batch_y, batch_size=batch_size)
@@ -123,9 +112,10 @@ def getBatch(data, batch_size):
 		batch = next(b)
 		for x, y in batch:
 			yield x, y
+		
 
 def getImageToBatch(imgpath):
-	return img_to_array(load_img(os.getcwd() + '/data/' + imgpath)) #, target_size=(66,200,3)
+	return img_to_array(load_img(os.getcwd() + '/data/' + imgpath, target_size=(66,200,3))) 
 
 
 def prepareDataFromCSV(path):
@@ -141,22 +131,22 @@ def main():
 	path = '/data/driving_log.csv'
 	training_data = prepareDataFromCSV(os.getcwd() + path)
 	batch_size = 128
-	samples_per_epoch = batch_size * 120
-	nb_epoch = 2
+	samples_per_epoch = batch_size * 50
+	nb_epoch = 5
 	print(" Training data from csv: {}".format(path))
 	print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"
 		.format(batch_size, nb_epoch, samples_per_epoch))
 
 	
 	# To test without gpu
-	#nb_epoch = 1
-	#batch_size = 5
-	#samples_per_epoch = 20
+	#nb_epoch = 3
+	#batch_size = 20
+	#samples_per_epoch = 100
 
 	## Get model and start training
 	model = getCNN()
 	# Compile the model with adam optimizer
-	adam = Adam(lr = 0.0001)
+	adam = Adam(lr = 0.001)
 	model.compile(optimizer=adam, loss="mse")
 
 	#print(model.summary())
@@ -169,16 +159,14 @@ def main():
 	history = model.fit_generator(
 		getBatch(training_data, batch_size), 
 		samples_per_epoch=samples_per_epoch,
-		nb_epoch=nb_epoch,
-		validation_data = getBatch(training_data, batch_size),
-		nb_val_samples = len(data) * 0.05)
+		nb_epoch=nb_epoch)
 	
 
 	# Save model.
 	json_string = model.to_json()
 	with open('model.json', 'w') as outfile:
 		json.dump(json_string, outfile)
-	# Save weights.
+	# # Save weights.
 	model.save_weights('model.h5')
 
 	print("Training finished... Model and weights saved!")
