@@ -44,29 +44,25 @@ def getCNN():
     # Layer 4 - Convolutional
     model.add(Convolution2D(64, 3, 3, border_mode='valid', subsample=(1,1)))
     model.add(Activation('relu'))
-    #model.add(BatchNormalization(epsilon=1e-06, mode=0, 
-    #               axis=-1, momentum=0.99, 
-    #               weights=None, beta_init='zero', 
-    #               gamma_init='one'))
 
-    #  Flatten
+    # Layer 5 Flatten
     model.add(Flatten())
 
-    # Layer 5 - Fully-connected
+    # Layer 6 - Fully-connected
     model.add(Dense(100))
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
 
-    # Layer 6 - Fully-connected
+    # Layer 7 - Fully-connected
     model.add(Dense(50))
     model.add(Activation('relu'))
 
-    # Layer 7 - Fully-connected
+    # Layer 8 - Fully-connected
     model.add(Dense(10))
     model.add(Activation('relu'))
     model.add(Dropout(0.5))
     
-    # Layer 8 - Fully-connected
+    # Layer 9 - Fully-connected
     model.add(Dense(1))
     
     return model
@@ -76,51 +72,58 @@ def normalize(image):
     return image / 255.0 - 0.5
 
 
+# Generate batch to train with augmentation
 def generateTrainingBatch(data, batch_size):
     while 1:    
         batch_x = np.zeros((batch_size, 66, 200, 3)) # 160, 320
         batch_y = np.zeros(batch_size)
         i = 0
         while i < batch_size:
+            # Get random index in data
             rint = np.random.randint(len(data)-1)
-            if -0.15 < float(data[rint][1]) < 0.15:
+            # Get random type of image. center, left or right image
+            rtype = np.random.randint(3)
+            # Set offset to steerin angle if left or right image are selected
+            offset = 0.0
+            if rtype == 1: # Left
+                offset = 0.2
+            elif rtype == 2: # Right
+                offset = -0.2
+            # Check if steering is approx straight driving
+            if -0.15 < float(data[rint][3]) < 0.15:
                 # Throw away some driving straight images. Only get approx 10% of them
                 if np.random.randint(10) == 1:
-                    batch_x[i] = getImageToBatch(data[rint][0])
-                    batch_y[i] = float(data[rint][1])
+                    batch_x[i] = getImageToBatch(data[rint][rtype])
+                    batch_y[i] = float(data[rint][3]) + offset
+                    # Randomly approx 1 of 4 flipa axes and steering angle
                     if np.random.randint(4) == 1:
                         batch_x[i], batch_y[i] = flip(batch_x[i], batch_y[i])
                     i += 1
             else:
-                batch_x[i] = getImageToBatch(data[rint][0])
-                batch_y[i] = float(data[rint][1])
+                # Other than approx straight images goes straight into batch with 1 of 4 flipping
+                batch_x[i] = getImageToBatch(data[rint][rtype])
+                batch_y[i] = float(data[rint][3]) + offset
                 if np.random.randint(4) == 1:
                     batch_x[i], batch_y[i] = flip(batch_x[i], batch_y[i])
                 i += 1
-            # Randomly flip image and label
-            # This will flip approx 50% of images.
-            #if np.random.randint(2) == 1:
-            #	batch_x[i], batch_y[i] = flip(batch_x[i], batch_y[i])
 
-
+        # Some extra augmentation
         datagen = ImageDataGenerator(
             rotation_range=5,
             width_shift_range=0.1,
             height_shift_range=0.1
             )
-#featurewise_center=True,
-#featurewise_std_normalization=True,
 
-        #datagen.fit(batch_x)
         yield datagen.flow(batch_x, batch_y, batch_size=batch_size)
 
 
+# Flip images by axis and steering angle
 def flip(image, angle):
     flippedImg = cv2.flip(image,1)
     flippedAngle = angle * (-1)
     return flippedImg, flippedAngle
 
-
+# Yields batch from generated batch
 def getBatch(data, batch_size):
     b = generateTrainingBatch(data, batch_size)
     while 1:
@@ -129,16 +132,17 @@ def getBatch(data, batch_size):
             yield x, y
         
 
+# Load image in size (66,200,3) and into array
 def getImageToBatch(imgpath):
     return img_to_array(load_img(os.getcwd() + '/data/' + imgpath, target_size=(66,200,3))) 
 
-
+# Reads the driving log csv file 
 def prepareDataFromCSV(path):
     data = []
     with open(path) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            data.append([row['center'], row['steering']])
+            data.append([row['center'], row['left'], row['right'], row['steering']])
     return data
 
 
@@ -146,7 +150,7 @@ def main():
     path = '/data/driving_log.csv'
     training_data = prepareDataFromCSV(os.getcwd() + path)
     batch_size = 128
-    samples_per_epoch = batch_size * 80
+    samples_per_epoch = batch_size * 160
     nb_epoch = 5
     print(" Training data from csv: {}".format(path))
     print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"

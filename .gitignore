@@ -1,5 +1,7 @@
 # Extra stuff
-/data
+/IMG
+/session_data
+data_processing.py
 .DS_Store
 
 # Byte-compiled / optimized / DLL files
