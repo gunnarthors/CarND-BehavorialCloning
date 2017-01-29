@@ -1,4 +1,4 @@
-import os, csv, json, math
+import os, csv, json, math, cv2
 import numpy as np
 import tensorflow as tf
 tf.python.control_flow_ops = tf
@@ -93,20 +93,19 @@ def generateTrainingBatch(data, batch_size):
                 batch_x[i] = getImageToBatch(data[rint][0])
                 batch_y[i] = float(data[rint][1])
                 i += 1
+            # Randomly flip image and label
+            # This will flip approx 50% of images.
+            if np.random.randint(2) == 1:
+            	batch_x[i], batch_y[i] = flip(batch_x[i], batch_y[i])
 
-        # Randomly flip image and label
-        # This will flip approx 50% of images.
-        if np.random.randint(2) == 1:
-            batch_x[i], batch_y[i] = flip(batch_x[i], batch_y[i])
 
         datagen = ImageDataGenerator(
-            #featurewise_center=True,
-            #featurewise_std_normalization=True,
             rotation_range=5,
             width_shift_range=0.1,
             height_shift_range=0.1
             )
-
+#featurewise_center=True,
+#featurewise_std_normalization=True,
 
         #datagen.fit(batch_x)
         yield datagen.flow(batch_x, batch_y, batch_size=batch_size)
@@ -114,8 +113,8 @@ def generateTrainingBatch(data, batch_size):
 
 def flip(image, angle):
     flippedImg = cv2.flip(image,1)
-    flippedAngle = angle*(-1)
-    return new_image, new_angle
+    flippedAngle = angle * (-1)
+    return flippedImg, flippedAngle
 
 
 def getBatch(data, batch_size):
