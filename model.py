@@ -26,18 +26,10 @@ def getCNN():
 
 	# Layer 1 - Convolutional
 	model.add(Convolution2D(24, 5, 5, border_mode='valid', subsample=(2,2)))
-	#model.add(BatchNormalization(epsilon=1e-06, mode=0, 
-    #               axis=-1, momentum=0.99, 
-    #               weights=None, beta_init='zero', 
-    #               gamma_init='one'))
 	model.add(Activation('relu'))
 
 	# Layer 2 - Convolutional
 	model.add(Convolution2D(36, 5, 5, border_mode='valid', subsample=(2,2)))
-	#model.add(BatchNormalization(epsilon=1e-06, mode=0, 
-    #               axis=-1, momentum=0.99, 
-    #               weights=None, beta_init='zero', 
-    #               gamma_init='one'))
 	model.add(Activation('relu'))
 
 	# Layer 3 - Convolutional
@@ -71,7 +63,7 @@ def getCNN():
 	# Layer 5 - Fully-connected
 	model.add(Dense(100))
 	model.add(Activation('relu'))
-	model.add(Dropout(0.8))
+	model.add(Dropout(0.5))
 
 	# Layer 6 - Fully-connected
 	model.add(Dense(50))
@@ -80,13 +72,10 @@ def getCNN():
 	# Layer 7 - Fully-connected
 	model.add(Dense(10))
 	model.add(Activation('relu'))
-	model.add(Dropout(0.8))
+	model.add(Dropout(0.5))
 	
 	# Layer 8 - Fully-connected
 	model.add(Dense(1))
-
-	# Output layer - adam optimizer
-	model.compile(optimizer="adam", loss="mse")
 	
 	return model
 
@@ -95,54 +84,63 @@ def normalize(image):
     return image / 255.0 - 0.5
 
 
-def generateTrainingBatch(data, batch_size):
-	batch_x = np.zeros((batch_size, 66, 200, 3))
-	batch_y = np.zeros(batch_size)
-	counter = 1
-	while 1:
-		tempnc = 0
-		tempcenter = 0
-		tempthrow = 0
-		for b in range(batch_size):
-			if float(data[b*counter][1]) != 0.0:
-				batch_x[b] = getImageToBatch(data[b*counter][0])
-				batch_y[b] = float(data[b*counter][1])
-				tempnc += 1
-				# Throw away some driving straight images
-			elif np.random.randint(10) == 0:
-				batch_x[b] = getImageToBatch(data[b*counter][0])
-				batch_y[b] = float(data[b*counter][1])
-				tempcenter += 1
-			else:
-				tempthrow += 1
-
-		# Reset counter if needed. else increase by one
-		if counter * batch_size  >= len(data) - 2:
-			counter = 0
-		else :
-			counter += 1
-		#print("This batch: center: {} \n not center: {} \n throw: {}".format(tempcenter, tempnc, tempthrow))
-		#print(batch_y)
-		yield batch_x, batch_y
-################ TEST
 # def generateTrainingBatch(data, batch_size):
 # 	batch_x = np.zeros((batch_size, 66, 200, 3))
 # 	batch_y = np.zeros(batch_size)
-# 	counter = 0
-# 	while counter < batch_size:
-# 		index = np.random.randint(len(data))
-# 		if float(data[index][1]) != 0.0:
-# 			batch_x[counter] = getImageToBatch(data[index][0])
-# 			batch_y[counter] = float(data[index][1])
-# 			counter += 1
-# 		# Throw away some driving straight images
-# 		elif np.random.randint(10) == 0:
-# 			batch_x[counter] = getImageToBatch(data[index][0])
-# 			batch_y[counter] = float(data[index][1])
+# 	counter = 1
+# 	while 1:
+# 		for b in range(batch_size):
+# 			if float(data[b*counter][1]) != 0.0:
+# 				batch_x[b] = getImageToBatch(data[b*counter][0])
+# 				batch_y[b] = float(data[b*counter][1])
+# 				# Throw away some driving straight images
+# 			elif np.random.randint(10) == 0:
+# 				batch_x[b] = getImageToBatch(data[b*counter][0])
+# 				batch_y[b] = float(data[b*counter][1])
+
+# 		# Reset counter if needed. else increase by one
+# 		if counter * batch_size  >= len(data) - 2:
+# 			counter = 0
+# 		else :
 # 			counter += 1
 
-# 	return batch_x, batch_y
-# ################ END TEST
+# 		yield batch_x, batch_y
+
+def generateTrainingBatch(data, batch_size):
+	while 1:	
+	 	batch_x = np.zeros((batch_size, 66, 200, 3))
+	 	batch_y = np.zeros(batch_size)
+	 	i, s = 0, 0
+	 	while i < batch_size:
+	 		rint = np.random.randint(len(data)-1)
+
+	 		if float(data[s][1]) != 0.0:
+	 			batch_x[i] = getImageToBatch(data[s][0])
+	 			batch_y[i] = float(data[s][1])
+	 			i += 1
+	 		# Throw away some driving straight images
+	 		elif np.random.randint(10) == 0:
+	 			batch_x[i] = getImageToBatch(data[s][0])
+	 			batch_y[i] = float(data[s][1])
+	 			i += 1
+	 		s += 1
+
+	 	datagen = ImageDataGenerator(
+	    	featurewise_center=True,
+	    	featurewise_std_normalization=True,
+	    	rotation_range=10,
+	    	width_shift_range=0.2,
+	    	height_shift_range=0.2)
+
+	 	datagen.fit(batch_x)
+	 	yield datagen.flow(batch_x, batch_y, batch_size=batch_size)
+
+def getBatch(data, batch_size):
+	b = generateTrainingBatch(data, batch_size)
+	while 1:
+		batch = next(b)
+		for x, y in batch:
+			yield x, y
 
 def getImageToBatch(imgpath):
 	return img_to_array(load_img(os.getcwd() + '/data/' + imgpath,target_size=(66,200,3)))
@@ -160,12 +158,9 @@ def prepareDataFromCSV(path):
 def main():
 	path = '/data/driving_log.csv'
 	training_data = prepareDataFromCSV(os.getcwd() + path)
-	#batch_size = 128
-	#temp = math.floor((len(training_data)/batch_size)/1.3)
-	#samples_per_epoch = temp * batch_size
-	samples_per_epoch = len(training_data)/1.3
-	batch_size = samples_per_epoch
-	nb_epoch = 5
+	batch_size = 256
+	samples_per_epoch = batch_size * 60
+	nb_epoch = 20
 	print(" Training data from csv: {}".format(path))
 	print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"
 		.format(batch_size, nb_epoch, samples_per_epoch))
@@ -173,17 +168,13 @@ def main():
 	
 	# To test without gpu
 	#nb_epoch = 1
-	#batch_size = 3
+	#batch_size = 5
 	#samples_per_epoch = 20
 
 	## Get model and start training
 	model = getCNN()
-
-	#x = generateTrainingBatch(training_data, batch_size)
-	#next(x)
-	#next(x)
-	#next(x)
-	#next(x)
+	# Compile the model with adam optimizer
+	model.compile(optimizer="adam", loss="mse")
 
 	#print(model.summary())
 	####### ADD THIS BEFORE GOING ON WITH TRAINING ########
@@ -191,9 +182,9 @@ def main():
 	#if os.path.isfile('model.h5'):
 	#	print('Loading weights!')
 	#	model.load_weights('model.h5')
-	
+
 	history = model.fit_generator(
-		generateTrainingBatch(training_data, batch_size), 
+		getBatch(training_data, batch_size), 
 		samples_per_epoch=samples_per_epoch,
 		nb_epoch=nb_epoch)
 	
