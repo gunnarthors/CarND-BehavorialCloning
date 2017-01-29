@@ -171,16 +171,16 @@ def main():
 	training_data = prepareDataFromCSV(os.getcwd() + path)
 	batch_size = 128
 	samples_per_epoch = batch_size * 120
-	nb_epoch = 5
+	nb_epoch = 8
 	print(" Training data from csv: {}".format(path))
 	print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"
 		.format(batch_size, nb_epoch, samples_per_epoch))
 
 	
 	# To test without gpu
-	nb_epoch = 1
-	batch_size = 5
-	samples_per_epoch = 20
+	#nb_epoch = 1
+	#batch_size = 5
+	#samples_per_epoch = 20
 
 	## Get model and start training
 	model = getCNN()
