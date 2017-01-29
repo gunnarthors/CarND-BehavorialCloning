@@ -133,7 +133,7 @@ def main():
 	batch_size = 128
 	temp = math.floor(len(training_data)/batch_size)
 	samples_per_epoch = temp * batch_size
-	nb_epoch = 10
+	nb_epoch = 20
 	print(" Training data from csv: {}".format(path))
 	print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"
 		.format(batch_size, nb_epoch, samples_per_epoch))
@@ -157,8 +157,7 @@ def main():
 	history = model.fit_generator(
 		generateTrainingBatch(training_data, batch_size), 
 		samples_per_epoch=samples_per_epoch,
-		nb_epoch=nb_epoch,
-		validation_split=0.15)
+		nb_epoch=nb_epoch)
 	
 
 	# Save model.
