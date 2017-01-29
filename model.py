@@ -26,18 +26,18 @@ def getCNN():
 
 	# Layer 1 - Convolutional
 	model.add(Convolution2D(24, 5, 5, border_mode='valid', subsample=(2,2)))
-	model.add(BatchNormalization(epsilon=1e-06, mode=0, 
-                   axis=-1, momentum=0.99, 
-                   weights=None, beta_init='zero', 
-                   gamma_init='one'))
+	#model.add(BatchNormalization(epsilon=1e-06, mode=0, 
+    #               axis=-1, momentum=0.99, 
+    #               weights=None, beta_init='zero', 
+    #               gamma_init='one'))
 	model.add(Activation('relu'))
 
 	# Layer 2 - Convolutional
 	model.add(Convolution2D(36, 5, 5, border_mode='valid', subsample=(2,2)))
-	model.add(BatchNormalization(epsilon=1e-06, mode=0, 
-                   axis=-1, momentum=0.99, 
-                   weights=None, beta_init='zero', 
-                   gamma_init='one'))
+	#model.add(BatchNormalization(epsilon=1e-06, mode=0, 
+    #               axis=-1, momentum=0.99, 
+    #               weights=None, beta_init='zero', 
+    #               gamma_init='one'))
 	model.add(Activation('relu'))
 
 	# Layer 3 - Convolutional
