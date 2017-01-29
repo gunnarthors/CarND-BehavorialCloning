@@ -100,21 +100,29 @@ def generateTrainingBatch(data, batch_size):
 	batch_y = np.zeros(batch_size)
 	counter = 1
 	while 1:
+		tempnc = 0
+		tempcenter = 0
+		tempthrow = 0
 		for b in range(batch_size):
-			if float(data[b*1][1]) != 0.0:
-				batch_x[b] = getImageToBatch(data[b*1][0])
-				batch_y[b] = float(data[b*1][1])
+			if float(data[b*counter][1]) != 0.0:
+				batch_x[b] = getImageToBatch(data[b*counter][0])
+				batch_y[b] = float(data[b*counter][1])
+				tempnc += 1
 				# Throw away some driving straight images
 			elif np.random.randint(10) == 0:
-				batch_x[b] = getImageToBatch(data[b*1][0])
-				batch_y[b] = float(data[b*1][1])
+				batch_x[b] = getImageToBatch(data[b*counter][0])
+				batch_y[b] = float(data[b*counter][1])
+				tempcenter += 1
+			else:
+				tempthrow += 1
 
 		# Reset counter if needed. else increase by one
 		if counter * batch_size  >= len(data) - 2:
 			counter = 0
 		else :
 			counter += 1
-
+		#print("This batch: center: {} \n not center: {} \n throw: {}".format(tempcenter, tempnc, tempthrow))
+		#print(batch_y)
 		yield batch_x, batch_y
 
 
@@ -145,13 +153,19 @@ def main():
 	
 	# To test without gpu
 	#nb_epoch = 1
-	#batch_size = 5
-	#samples_per_epoch = 10
+	#batch_size = 3
+	#samples_per_epoch = 20
 
 	## Get model and start training
 	model = getCNN()
 
-	print(model.summary())
+	#x = generateTrainingBatch(training_data, batch_size)
+	#next(x)
+	#next(x)
+	#next(x)
+	#next(x)
+
+	#print(model.summary())
 	####### ADD THIS BEFORE GOING ON WITH TRAINING ########
 		# Load weights if they exists.
 	#if os.path.isfile('model.h5'):
