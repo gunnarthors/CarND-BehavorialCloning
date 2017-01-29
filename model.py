@@ -151,7 +151,7 @@ def main():
     training_data = prepareDataFromCSV(os.getcwd() + path)
     batch_size = 128
     samples_per_epoch = batch_size * 160
-    nb_epoch = 5
+    nb_epoch = 10
     print(" Training data from csv: {}".format(path))
     print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"
         .format(batch_size, nb_epoch, samples_per_epoch))
