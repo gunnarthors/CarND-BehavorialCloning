@@ -124,7 +124,25 @@ def generateTrainingBatch(data, batch_size):
 		#print("This batch: center: {} \n not center: {} \n throw: {}".format(tempcenter, tempnc, tempthrow))
 		#print(batch_y)
 		yield batch_x, batch_y
+################ TEST
+# def generateTrainingBatch(data, batch_size):
+# 	batch_x = np.zeros((batch_size, 66, 200, 3))
+# 	batch_y = np.zeros(batch_size)
+# 	counter = 0
+# 	while counter < batch_size:
+# 		index = np.random.randint(len(data))
+# 		if float(data[index][1]) != 0.0:
+# 			batch_x[counter] = getImageToBatch(data[index][0])
+# 			batch_y[counter] = float(data[index][1])
+# 			counter += 1
+# 		# Throw away some driving straight images
+# 		elif np.random.randint(10) == 0:
+# 			batch_x[counter] = getImageToBatch(data[index][0])
+# 			batch_y[counter] = float(data[index][1])
+# 			counter += 1
 
+# 	return batch_x, batch_y
+# ################ END TEST
 
 def getImageToBatch(imgpath):
 	return img_to_array(load_img(os.getcwd() + '/data/' + imgpath,target_size=(66,200,3)))
@@ -142,10 +160,12 @@ def prepareDataFromCSV(path):
 def main():
 	path = '/data/driving_log.csv'
 	training_data = prepareDataFromCSV(os.getcwd() + path)
-	batch_size = 128
-	temp = math.floor((len(training_data)/batch_size)/1.3)
-	samples_per_epoch = temp * batch_size
-	nb_epoch = 20
+	#batch_size = 128
+	#temp = math.floor((len(training_data)/batch_size)/1.3)
+	#samples_per_epoch = temp * batch_size
+	samples_per_epoch = len(training_data)/1.3
+	batch_size = samples_per_epoch
+	nb_epoch = 5
 	print(" Training data from csv: {}".format(path))
 	print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"
 		.format(batch_size, nb_epoch, samples_per_epoch))
