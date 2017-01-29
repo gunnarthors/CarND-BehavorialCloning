@@ -93,11 +93,11 @@ def generateTrainingBatch(data, batch_size):
 	 			# Throw away some driving straight images. Only get approx 10% of them
 	 			if np.random.randint(10) == 0:
 	 				batch_x[i] = getImageToBatch(data[rint][0])
-	 				batch_y[i] = float(data[rint][1]+0.5)
+	 				batch_y[i] = float(data[rint][1]) + 0.5
 	 				i += 1
 	 		else:
 	 			batch_x[i] = getImageToBatch(data[rint][0])
-	 			batch_y[i] = float(data[rint][1]+0.5)
+	 			batch_y[i] = float(data[rint][1]) + 0.5
 	 			i += 1
 	 		
 	 		# Resetting data counter if bigger than data
