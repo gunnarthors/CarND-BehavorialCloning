@@ -20,9 +20,15 @@ import matplotlib.pyplot as plt
 def getCNN():
 	
 	model = Sequential()
+	
+	def resize(image):
+		import tensorflow as tf
+		return tf.image.resize_images(image, (66, 200))
+	# Resize Image
+	model.add(Lambda(resize, input_shape=(160,320, 3)))
 
-	# Start with noramlization
-	model.add(Lambda(normalize, input_shape=(66, 200, 3)))
+	# Noramlization
+	model.add(Lambda(normalize)) #, input_shape=(66, 200, 3)
 
 	# Layer 1 - Convolutional
 	model.add(Convolution2D(24, 5, 5, border_mode='valid', subsample=(2,2)))
@@ -107,10 +113,11 @@ def normalize(image):
 # 		yield batch_x, batch_y
 
 def generateTrainingBatch(data, batch_size):
+	s = 0
 	while 1:	
-	 	batch_x = np.zeros((batch_size, 66, 200, 3))
+	 	batch_x = np.zeros((batch_size, 160, 320, 3)) # 66, 200
 	 	batch_y = np.zeros(batch_size)
-	 	i, s = 0, 0
+	 	i = 0
 	 	while i < batch_size:
 	 		rint = np.random.randint(len(data)-1)
 
@@ -123,7 +130,11 @@ def generateTrainingBatch(data, batch_size):
 	 			batch_x[i] = getImageToBatch(data[s][0])
 	 			batch_y[i] = float(data[s][1])
 	 			i += 1
-	 		s += 1
+	 		# Resetting data counter if bigger than data
+	 		if s >= len(data) - 1:
+	 			s = 0
+	 		else:
+	 			s += 1
 
 	 	datagen = ImageDataGenerator(
 	    	featurewise_center=True,
@@ -143,7 +154,7 @@ def getBatch(data, batch_size):
 			yield x, y
 
 def getImageToBatch(imgpath):
-	return img_to_array(load_img(os.getcwd() + '/data/' + imgpath,target_size=(66,200,3)))
+	return img_to_array(load_img(os.getcwd() + '/data/' + imgpath)) #, target_size=(66,200,3)
 
 
 def prepareDataFromCSV(path):
@@ -158,8 +169,8 @@ def prepareDataFromCSV(path):
 def main():
 	path = '/data/driving_log.csv'
 	training_data = prepareDataFromCSV(os.getcwd() + path)
-	batch_size = 256
-	samples_per_epoch = batch_size * 60
+	batch_size = 128
+	samples_per_epoch = batch_size * 120
 	nb_epoch = 5
 	print(" Training data from csv: {}".format(path))
 	print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"
@@ -167,9 +178,9 @@ def main():
 
 	
 	# To test without gpu
-	#nb_epoch = 1
-	#batch_size = 5
-	#samples_per_epoch = 20
+	nb_epoch = 1
+	batch_size = 5
+	samples_per_epoch = 20
 
 	## Get model and start training
 	model = getCNN()
