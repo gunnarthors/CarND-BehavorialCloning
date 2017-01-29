@@ -101,7 +101,11 @@ def generateTrainingBatch(data, batch_size):
 	counter = 1
 	while 1:
 		for b in range(batch_size):
-			if float(data[b*1][1]) != 0.0 and np.random.randint(2) != 0: # Throw away some driving straight images
+			if float(data[b*1][1]) != 0.0:
+				batch_x[b] = getImageToBatch(data[b*1][0])
+				batch_y[b] = float(data[b*1][1])
+				# Throw away some driving straight images
+			elif np.random.randint(10) == 0:
 				batch_x[b] = getImageToBatch(data[b*1][0])
 				batch_y[b] = float(data[b*1][1])
 
@@ -131,7 +135,7 @@ def main():
 	path = '/data/driving_log.csv'
 	training_data = prepareDataFromCSV(os.getcwd() + path)
 	batch_size = 128
-	temp = math.floor(len(training_data)/batch_size)
+	temp = math.floor(len((training_data)/batch_size)/2)
 	samples_per_epoch = temp * batch_size
 	nb_epoch = 20
 	print(" Training data from csv: {}".format(path))

@@ -64,12 +64,6 @@ def send_control(steering_angle, throttle):
     'throttle': throttle.__str__()
     }, skip_sid=True)
 
-#def send_control(steering_angle, throttle):
-#    print("sendcontrol: \nsteering angle: {}, throttle: {}".format(steering_angle, throttle))
-#    sio.emit("steer", data={
-#    'steering_angle': str(steering_angle).replace('.', ','),
-#    'throttle': str(throttle).replace('.', ',')
-#    }, skip_sid=True)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Remote Driving')
