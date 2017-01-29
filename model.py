@@ -7,6 +7,7 @@ from keras.models import Sequential, load_model
 from keras.layers import Dense, Dropout, Flatten, Activation
 from keras.layers.core import Lambda
 from keras.layers.convolutional import Convolution2D
+from keras.optimizers import Adam
 from keras.layers.pooling import MaxPooling2D
 from keras.layers.normalization import BatchNormalization
 from keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img
@@ -93,11 +94,11 @@ def generateTrainingBatch(data, batch_size):
 	 			# Throw away some driving straight images. Only get approx 10% of them
 	 			if np.random.randint(10) == 0:
 	 				batch_x[i] = getImageToBatch(data[rint][0])
-	 				batch_y[i] = float(data[rint][1]) + 0.5
+	 				batch_y[i] = float(data[rint][1])
 	 				i += 1
 	 		else:
 	 			batch_x[i] = getImageToBatch(data[rint][0])
-	 			batch_y[i] = float(data[rint][1]) + 0.5
+	 			batch_y[i] = float(data[rint][1])
 	 			i += 1
 	 		
 	 		# Resetting data counter if bigger than data
@@ -139,7 +140,7 @@ def prepareDataFromCSV(path):
 def main():
 	path = '/data/driving_log.csv'
 	training_data = prepareDataFromCSV(os.getcwd() + path)
-	batch_size = 64
+	batch_size = 128
 	samples_per_epoch = batch_size * 120
 	nb_epoch = 2
 	print(" Training data from csv: {}".format(path))
@@ -155,10 +156,11 @@ def main():
 	## Get model and start training
 	model = getCNN()
 	# Compile the model with adam optimizer
-	model.compile(optimizer="adam", loss="mse")
+	adam = Adam(lr = 0.0001)
+	model.compile(optimizer=adam, loss="mse")
 
 	#print(model.summary())
-	####### ADD THIS BEFORE GOING ON WITH TRAINING ########
+	####### LOAD WEIGHTS ########
 		# Load weights if they exists.
 	#if os.path.isfile('model.h5'):
 	#	print('Loading weights!')
@@ -167,7 +169,9 @@ def main():
 	history = model.fit_generator(
 		getBatch(training_data, batch_size), 
 		samples_per_epoch=samples_per_epoch,
-		nb_epoch=nb_epoch)
+		nb_epoch=nb_epoch,
+		validation_data = getBatch(training_data, batch_size),
+		nb_val_samples = len(data) * 0.05)
 	
 
 	# Save model.
