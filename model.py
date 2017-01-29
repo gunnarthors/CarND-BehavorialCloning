@@ -143,7 +143,7 @@ def main():
 	path = '/data/driving_log.csv'
 	training_data = prepareDataFromCSV(os.getcwd() + path)
 	batch_size = 128
-	temp = math.floor((len(training_data)/batch_size)/2)
+	temp = math.floor((len(training_data)/batch_size)/1.5)
 	samples_per_epoch = temp * batch_size
 	nb_epoch = 20
 	print(" Training data from csv: {}".format(path))
