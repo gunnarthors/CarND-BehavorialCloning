@@ -100,15 +100,15 @@ def generateTrainingBatch(data, batch_size):
             batch_x[i], batch_y[i] = flip(batch_x[i], batch_y[i])
 
         datagen = ImageDataGenerator(
-            featurewise_center=True,
-            featurewise_std_normalization=True,
+            #featurewise_center=True,
+            #featurewise_std_normalization=True,
             rotation_range=5,
             width_shift_range=0.1,
             height_shift_range=0.1
             )
 
 
-        datagen.fit(batch_x)
+        #datagen.fit(batch_x)
         yield datagen.flow(batch_x, batch_y, batch_size=batch_size)
 
 
