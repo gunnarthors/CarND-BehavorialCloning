@@ -94,17 +94,29 @@ def generateTrainingBatch(data, batch_size):
                 batch_y[i] = float(data[rint][1])
                 i += 1
 
+        # Randomly flip image and label
+        # This will flip approx 50% of images.
+        if np.randint(2) == 1:
+            batch_x[i], batch_y[i] = flip(batch_x[i], batch_y[i])
+
         datagen = ImageDataGenerator(
-            #featurewise_center=True,
-            #featurewise_std_normalization=True,
-            #rotation_range=10,
-            #width_shift_range=0.2,
-            #height_shift_range=0.2
+            featurewise_center=True,
+            featurewise_std_normalization=True,
+            rotation_range=5,
+            width_shift_range=0.1,
+            height_shift_range=0.1
             )
 
 
         datagen.fit(batch_x)
         yield datagen.flow(batch_x, batch_y, batch_size=batch_size)
+
+
+def flip(image, angle):
+    flippedImg = cv2.flip(image,1)
+    flippedAngle = angle*(-1)
+    return new_image, new_angle
+
 
 def getBatch(data, batch_size):
     b = generateTrainingBatch(data, batch_size)
@@ -131,7 +143,7 @@ def main():
     path = '/data/driving_log.csv'
     training_data = prepareDataFromCSV(os.getcwd() + path)
     batch_size = 128
-    samples_per_epoch = batch_size * 50
+    samples_per_epoch = batch_size * 80
     nb_epoch = 5
     print(" Training data from csv: {}".format(path))
     print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"
@@ -139,9 +151,9 @@ def main():
 
     
     # To test without gpu
-    #nb_epoch = 3
-    #batch_size = 20
-    #samples_per_epoch = 100
+    #nb_epoch = 4
+    #batch_size = 36
+    #samples_per_epoch = 36*36
 
     ## Get model and start training
     model = getCNN()
@@ -166,7 +178,7 @@ def main():
     json_string = model.to_json()
     with open('model.json', 'w') as outfile:
         json.dump(json_string, outfile)
-    # # Save weights.
+    # Save weights.
     model.save_weights('model.h5')
 
     print("Training finished... Model and weights saved!")
