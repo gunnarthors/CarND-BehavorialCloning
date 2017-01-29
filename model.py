@@ -41,19 +41,10 @@ def getCNN():
 	# Layer 3 - Convolutional
 	model.add(Convolution2D(48, 5, 5, border_mode='valid', subsample=(2,2)))
 	model.add(Activation('relu'))
-	#model.add(BatchNormalization(epsilon=1e-06, mode=0, 
-    #               axis=-1, momentum=0.99, 
-    #               weights=None, beta_init='zero', 
-    #               gamma_init='one'))
-
 
 	# Layer 4 - Convolutional
 	model.add(Convolution2D(64, 3, 3, border_mode='valid', subsample=(1,1)))
 	model.add(Activation('relu'))
-	#model.add(BatchNormalization(epsilon=1e-06, mode=0, 
-    #               axis=-1, momentum=0.99, 
-    #               weights=None, beta_init='zero', 
-    #               gamma_init='one'))
 
 	# Layer 4 - Convolutional
 	model.add(Convolution2D(64, 3, 3, border_mode='valid', subsample=(1,1)))
@@ -90,28 +81,6 @@ def normalize(image):
     return image / 255.0 - 0.5
 
 
-# def generateTrainingBatch(data, batch_size):
-# 	batch_x = np.zeros((batch_size, 66, 200, 3))
-# 	batch_y = np.zeros(batch_size)
-# 	counter = 1
-# 	while 1:
-# 		for b in range(batch_size):
-# 			if float(data[b*counter][1]) != 0.0:
-# 				batch_x[b] = getImageToBatch(data[b*counter][0])
-# 				batch_y[b] = float(data[b*counter][1])
-# 				# Throw away some driving straight images
-# 			elif np.random.randint(10) == 0:
-# 				batch_x[b] = getImageToBatch(data[b*counter][0])
-# 				batch_y[b] = float(data[b*counter][1])
-
-# 		# Reset counter if needed. else increase by one
-# 		if counter * batch_size  >= len(data) - 2:
-# 			counter = 0
-# 		else :
-# 			counter += 1
-
-# 		yield batch_x, batch_y
-
 def generateTrainingBatch(data, batch_size):
 	s = 0
 	while 1:	
@@ -120,21 +89,22 @@ def generateTrainingBatch(data, batch_size):
 	 	i = 0
 	 	while i < batch_size:
 	 		rint = np.random.randint(len(data)-1)
-
-	 		if float(data[s][1]) != 0.0:
-	 			batch_x[i] = getImageToBatch(data[s][0])
-	 			batch_y[i] = float(data[s][1])
-	 			i += 1
-	 		# Throw away some driving straight images
-	 		elif np.random.randint(10) == 0:
-	 			batch_x[i] = getImageToBatch(data[s][0])
-	 			batch_y[i] = float(data[s][1])
-	 			i += 1
-	 		# Resetting data counter if bigger than data
-	 		if s >= len(data) - 1:
-	 			s = 0
+	 		if -0.15 < float(data[rint][1]) < 0.15:
+	 			# Throw away some driving straight images. Only get approx 10% of them
+	 			if np.random.randint(10) == 0:
+	 				batch_x[i] = getImageToBatch(data[rint][0])
+	 				batch_y[i] = float(data[rint][1])
+	 				i += 1
 	 		else:
-	 			s += 1
+	 			batch_x[i] = getImageToBatch(data[rint][0])
+	 			batch_y[i] = float(data[rint][1])
+	 			i += 1
+	 		
+	 		# Resetting data counter if bigger than data
+	 		#if s >= len(data) - 1:
+	 		#	s = 0
+	 		#else:
+	 		#	s += 1
 
 	 	datagen = ImageDataGenerator(
 	    	featurewise_center=True,
