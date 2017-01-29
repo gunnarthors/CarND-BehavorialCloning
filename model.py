@@ -96,7 +96,7 @@ def generateTrainingBatch(data, batch_size):
 
         # Randomly flip image and label
         # This will flip approx 50% of images.
-        if np.randint(2) == 1:
+        if np.random.randint(2) == 1:
             batch_x[i], batch_y[i] = flip(batch_x[i], batch_y[i])
 
         datagen = ImageDataGenerator(
