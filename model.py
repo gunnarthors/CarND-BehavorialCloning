@@ -51,7 +51,7 @@ def getCNN():
     # Layer 6 - Fully-connected
     model.add(Dense(100))
     model.add(Activation('relu'))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.3))
 
     # Layer 7 - Fully-connected
     model.add(Dense(50))
@@ -60,7 +60,7 @@ def getCNN():
     # Layer 8 - Fully-connected
     model.add(Dense(10))
     model.add(Activation('relu'))
-    model.add(Dropout(0.5))
+    model.add(Dropout(0.3))
     
     # Layer 9 - Fully-connected
     model.add(Dense(1))
@@ -86,9 +86,9 @@ def generateTrainingBatch(data, batch_size):
             # Set offset to steerin angle if left or right image are selected
             offset = 0.0
             if rtype == 1: # Left
-                offset = 0.3
+                offset = 0.1
             elif rtype == 2: # Right
-                offset = -0.3
+                offset = -0.1
             # Check if steering is approx straight driving
             if -0.1 < float(data[rint][3]) < 0.1:
                 # Throw away some driving straight images. Only get approx 10% of them
@@ -180,6 +180,9 @@ def main():
         samples_per_epoch=samples_per_epoch,
         nb_epoch=nb_epoch)
     
+    
+    # Save history (output from training...) 
+    model.save('history.h5')
 
     # Save model.
     json_string = model.to_json()
