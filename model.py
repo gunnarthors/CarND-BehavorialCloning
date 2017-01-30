@@ -86,11 +86,11 @@ def generateTrainingBatch(data, batch_size):
             # Set offset to steerin angle if left or right image are selected
             offset = 0.0
             if rtype == 1: # Left
-                offset = 0.2
+                offset = 0.3
             elif rtype == 2: # Right
-                offset = -0.2
+                offset = -0.3
             # Check if steering is approx straight driving
-            if -0.15 < float(data[rint][3]) < 0.15:
+            if -0.1 < float(data[rint][3]) < 0.1:
                 # Throw away some driving straight images. Only get approx 10% of them
                 if np.random.randint(10) == 1:
                     batch_x[i] = getImageToBatch(data[rint][rtype])
@@ -109,9 +109,9 @@ def generateTrainingBatch(data, batch_size):
 
         # Some extra augmentation
         datagen = ImageDataGenerator(
-            rotation_range=5,
-            width_shift_range=0.1,
-            height_shift_range=0.1
+            #rotation_range=5,
+            #width_shift_range=0.1,
+            #height_shift_range=0.1
             )
 
         yield datagen.flow(batch_x, batch_y, batch_size=batch_size)
@@ -151,7 +151,7 @@ def main():
     training_data = prepareDataFromCSV(os.getcwd() + path)
     batch_size = 128
     samples_per_epoch = batch_size * 320
-    nb_epoch = 8
+    nb_epoch = 10
     print(" Training data from csv: {}".format(path))
     print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"
         .format(batch_size, nb_epoch, samples_per_epoch))
