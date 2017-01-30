@@ -73,8 +73,9 @@ def normalize(image):
 
 
 # Generate batch to train with augmentation
-def generateTrainingBatch(data, batch_size):
-    while 1:    
+#def generateTrainingBatch(data, batch_size):
+def getBatch(data, batch_size):
+    while 1:
         batch_x = np.zeros((batch_size, 66, 200, 3)) # 160, 320
         batch_y = np.zeros(batch_size)
         i = 0
@@ -89,6 +90,7 @@ def generateTrainingBatch(data, batch_size):
                 offset = 0.1
             elif rtype == 2: # Right
                 offset = -0.1
+            rtype = 0 # Test again only center images
             # Check if steering is approx straight driving
             if -0.1 < float(data[rint][3]) < 0.1:
                 # Throw away some driving straight images. Only get approx 10% of them
@@ -108,13 +110,14 @@ def generateTrainingBatch(data, batch_size):
                 i += 1
 
         # Some extra augmentation
-        datagen = ImageDataGenerator(
-            #rotation_range=5,
-            #width_shift_range=0.1,
-            #height_shift_range=0.1
-            )
+       # datagen = ImageDataGenerator(
+       #     #rotation_range=5,
+       #     #width_shift_range=0.1,
+       #     #height_shift_range=0.1
+       #     )
 
-        yield datagen.flow(batch_x, batch_y, batch_size=batch_size)
+        #yield datagen.flow(batch_x, batch_y, batch_size=batch_size)
+        yield batch_x, batch_y
 
 
 # Flip images by axis and steering angle
@@ -124,12 +127,12 @@ def flip(image, angle):
     return flippedImg, flippedAngle
 
 # Yields batch from generated batch
-def getBatch(data, batch_size):
-    b = generateTrainingBatch(data, batch_size)
-    while 1:
-        batch = next(b)
-        for x, y in batch:
-            yield x, y
+#def getBatch(data, batch_size):
+#    b = generateTrainingBatch(data, batch_size)
+#    while 1:
+#        batch = next(b)
+#        for x, y in batch:
+#            yield x, y
         
 
 # Load image in size (66,200,3) and into array
@@ -150,8 +153,8 @@ def main():
     path = '/data/driving_log.csv'
     training_data = prepareDataFromCSV(os.getcwd() + path)
     batch_size = 128
-    samples_per_epoch = batch_size * 320
-    nb_epoch = 15
+    samples_per_epoch = batch_size * 280
+    nb_epoch = 10
     print(" Training data from csv: {}".format(path))
     print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"
         .format(batch_size, nb_epoch, samples_per_epoch))
