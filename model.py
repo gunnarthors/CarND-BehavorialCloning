@@ -87,9 +87,9 @@ def getBatch(data, batch_size):
             # Set offset to steerin angle if left or right image are selected
             offset = 0.0
             if rtype == 1: # Left
-                offset = 0.05
+                offset = 0.25
             elif rtype == 2: # Right
-                offset = -0.05
+                offset = -0.25
             #rtype = 0 # Test again only center images
             # Check if steering is approx straight driving
             if -0.1 < float(data[rint][3]) < 0.1:
@@ -195,7 +195,8 @@ def main():
     model.save_weights('model.h5')
 
     print("Training finished... Model and weights saved!")
-    print(history)
+    print(history.history.keys())
+    print(history.history)
 
 if __name__ == '__main__':
     main()
