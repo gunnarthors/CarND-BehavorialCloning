@@ -87,10 +87,10 @@ def getBatch(data, batch_size):
             # Set offset to steerin angle if left or right image are selected
             offset = 0.0
             if rtype == 1: # Left
-                offset = 0.1
+                offset = 0.05
             elif rtype == 2: # Right
-                offset = -0.1
-            rtype = 0 # Test again only center images
+                offset = -0.05
+            #rtype = 0 # Test again only center images
             # Check if steering is approx straight driving
             if -0.1 < float(data[rint][3]) < 0.1:
                 # Throw away some driving straight images. Only get approx 10% of them
@@ -133,7 +133,7 @@ def flip(image, angle):
 #        batch = next(b)
 #        for x, y in batch:
 #            yield x, y
-        
+
 
 # Load image in size (66,200,3) and into array
 def getImageToBatch(imgpath):
@@ -153,7 +153,7 @@ def main():
     path = '/data/driving_log.csv'
     training_data = prepareDataFromCSV(os.getcwd() + path)
     batch_size = 128
-    samples_per_epoch = batch_size * 280
+    samples_per_epoch = batch_size * 200
     nb_epoch = 10
     print(" Training data from csv: {}".format(path))
     print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"
@@ -182,10 +182,10 @@ def main():
         getBatch(training_data, batch_size), 
         samples_per_epoch=samples_per_epoch,
         nb_epoch=nb_epoch)
-    
-    
+
+
     # Save history (output from training...) 
-    model.save('history.h5')
+    #model.save('history.h5')
 
     # Save model.
     json_string = model.to_json()
@@ -195,6 +195,7 @@ def main():
     model.save_weights('model.h5')
 
     print("Training finished... Model and weights saved!")
+    print(history)
 
 if __name__ == '__main__':
     main()
