@@ -156,8 +156,8 @@ def main():
     path = '/data/driving_log.csv'
     training_data = prepareDataFromCSV(os.getcwd() + path)
     batch_size = 128
-    samples_per_epoch = batch_size * 200
-    nb_epoch = 10
+    samples_per_epoch = batch_size * 220
+    nb_epoch = 20
     print(" Training data from csv: {}".format(path))
     print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"
         .format(batch_size, nb_epoch, samples_per_epoch))
@@ -171,7 +171,7 @@ def main():
     ## Get model and start training
     model = getCNN()
     # Compile the model with adam optimizer
-    adam = Adam(lr = 0.001)
+    adam = Adam(lr = 0.001, decay=1e-5)
     model.compile(optimizer=adam, loss="mse")
 
     #print(model.summary())
@@ -180,11 +180,14 @@ def main():
     #if os.path.isfile('model.h5'):
     #   print('Loading weights!')
     #   model.load_weights('model.h5')
-
+    from keras.callbacks import EarlyStopping, Callback
+    # set early stopping
+    es = EarlyStopping(monitor='loss', patience=3, verbose=0, mode='auto')
     history = model.fit_generator(
         getBatch(training_data, batch_size), 
         samples_per_epoch=samples_per_epoch,
-        nb_epoch=nb_epoch)
+        nb_epoch=nb_epoch,
+	callbacks=[es])
 
 
     # Save model.
