@@ -67,77 +67,31 @@ def getCNN():
     
     return model
 
-
-def normalize(image):
-    return image / 255.0 - 0.5
-
-
-# Generate batch to train with augmentation
-#def generateTrainingBatch(data, batch_size):
-def getBatch(data, batch_size):
-    while 1:
-        batch_x = np.zeros((batch_size, 66, 200, 3)) # 160, 320
-        batch_y = np.zeros(batch_size)
-        i = 0
-        while i < batch_size:
-            # Get random index in data
-            rint = np.random.randint(len(data)-1)
-            # Get random type of image. center, left or right image
-            rtype = np.random.randint(3)
-            # Set offset to steerin angle if left or right image are selected
-            offset = 0.0
-            if rtype == 1: # Left
-                offset = 0.25
-            elif rtype == 2: # Right
-                offset = -0.25
-            #rtype = 0 # Test again only center images
-            # Check if steering is approx straight driving
-            if -0.1 < float(data[rint][3]) < 0.1:
-                # Throw away some driving straight images. Only get approx 10% of them
-                if np.random.randint(10) == 1:
-                    batch_x[i] = getImageToBatch(data[rint][rtype])
-                    batch_y[i] = float(data[rint][3]) + offset
-                    # Randomly approx 1 of 4 flipa axes and steering angle
-                    if np.random.randint(4) == 1:
-                        batch_x[i], batch_y[i] = flip(batch_x[i], batch_y[i])
-                    i += 1
-            else:
-                # Other than approx straight images goes straight into batch with 1 of 4 flipping
-                batch_x[i] = getImageToBatch(data[rint][rtype])
-                batch_y[i] = float(data[rint][3]) + offset
-                if np.random.randint(4) == 1:
-                    batch_x[i], batch_y[i] = flip(batch_x[i], batch_y[i])
-                i += 1
-
-        # Some extra augmentation
-       # datagen = ImageDataGenerator(
-       #     #rotation_range=5,
-       #     #width_shift_range=0.1,
-       #     #height_shift_range=0.1
-       #     )
-
-        #yield datagen.flow(batch_x, batch_y, batch_size=batch_size)
-        yield batch_x, batch_y
-
-
+        
 # Flip images by axis and steering angle
 def flip(image, angle):
     flippedImg = cv2.flip(image,1)
     flippedAngle = angle * (-1)
     return flippedImg, flippedAngle
 
-# Yields batch from generated batch
-#def getBatch(data, batch_size):
-#    b = generateTrainingBatch(data, batch_size)
-#    while 1:
-#        batch = next(b)
-#        for x, y in batch:
-#            yield x, y
+# Normalize images
+def normalize(image):
+    return image / 255.0 - 0.5
 
-
-# Load image in size (66,200,3) and into array
+# Load image from path to np array. CV2 loads image in BGR but we change it to RGB as well.
 def getImageToBatch(imgpath):
-    return img_to_array(load_img(os.getcwd() + '/data/' + imgpath, target_size=(66,200,3))) 
+    img = cv2.imread(imgpath)
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    return img
+
+# Crop 60pixels of the top of the image as they are not needed for driving..
+# and we take 20px from bottom to get rid of the car from the image
+def cropTopBot(img):
+    return img[60:140, 0:320] # Crop from x, y, w, h 
+
+# Resize the image to fit our model input shape (66,200,3)
+def resizeImg(img):
+    return cv2.resize(img, (200,66))
 
 # Reads the driving log csv file 
 def prepareDataFromCSV(path):
@@ -145,8 +99,57 @@ def prepareDataFromCSV(path):
     with open(path) as csvfile:
         reader = csv.DictReader(csvfile)
         for row in reader:
-            data.append([row['center'], row['left'], row['right'], row['steering']])
+            data.append(
+                [
+                    os.getcwd() + '/data/' + row['center'], 
+                    os.getcwd() + '/data/' + row['left'], 
+                    os.getcwd() + '/data/' + row['right'], 
+                    row['steering']
+                ])
     return data
+
+
+def getBatch(data, batch_size):
+    steeringIndex = 3
+    while 1:    
+        batch_x = np.zeros((batch_size, 66, 200, 3))
+        batch_y = np.zeros(batch_size)
+        i = 0
+        while i < batch_size:
+            useImg = False
+            # Get random index in data and set steering value accordingly
+            rint = np.random.randint(len(data)-1)
+            steeringValue = float(data[rint][steeringIndex])         
+            
+            # Check if steering is approx straight driving - We dont want to take them all...
+            if -0.1 <= steeringValue <= 0.1 and np.random.randint(10) == 1:
+                useImg = True
+
+            # All images which are not as near 0.0 we will use
+            else:
+                useImg = True
+            
+            if useImg:              
+                # Get random type of image. center, left or right image
+                rtype = np.random.randint(3)
+                
+                if rtype == 1: # Left image add offset
+                    steeringValue += .2
+                if rtype == 2: # Right image add offset
+                    steeringValue -= .2 
+                    
+                batch_y[i] = steeringValue
+                batch_x[i] = resizeImg(cropTopBot(getImageToBatch(data[rint][rtype])))
+                
+                # Add random flip by axes images. Approx 1 of 5
+                if np.random.randint(5) == 1:
+                    batch_x[i], batch_y[i] = flip(batch_x[i], batch_y[i])
+
+                # As we used the image i will increse by one
+                i += 1          
+
+        yield batch_x, batch_y
+
 
 
 def main():
@@ -162,8 +165,8 @@ def main():
     
     # To test without gpu
     #nb_epoch = 4
-    #batch_size = 36
-    #samples_per_epoch = 36*36
+    #batch_size = 32
+    #samples_per_epoch = 36*10
 
     ## Get model and start training
     model = getCNN()
@@ -184,9 +187,6 @@ def main():
         nb_epoch=nb_epoch)
 
 
-    # Save history (output from training...) 
-    #model.save('history.h5')
-
     # Save model.
     json_string = model.to_json()
     with open('model.json', 'w') as outfile:
@@ -195,8 +195,7 @@ def main():
     model.save_weights('model.h5')
 
     print("Training finished... Model and weights saved!")
-    print(history.history.keys())
-    print(history.history)
+
 
 if __name__ == '__main__':
     main()
