@@ -81,7 +81,7 @@ def normalize(image):
 # Load image from path to np array. CV2 loads image in BGR but we change it to RGB as well.
 def getImageToBatch(imgpath):
     img = cv2.imread(imgpath)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+    #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     return img
 
 # Crop 60pixels of the top of the image as they are not needed for driving..
@@ -143,7 +143,7 @@ def getBatch(data, batch_size):
                 batch_x[i] = resizeImg(cropTopBot(getImageToBatch(data[rint][rtype])))
                 
                 # Add random flip by axes images. Approx 1 of 5
-                if np.random.randint(4) == 1:
+                if np.random.randint(5) == 1:
                     batch_x[i], batch_y[i] = flip(batch_x[i], batch_y[i])
 
                 # As we used the image i will increse by one
@@ -172,7 +172,7 @@ def main():
     ## Get model and start training
     model = getCNN()
     # Compile the model with adam optimizer
-    adam = Adam(lr = 0.001, decay=0.0001)
+    adam = Adam(lr = 0.001)
     model.compile(optimizer=adam, loss="mse")
 
     history = model.fit_generator(
