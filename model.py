@@ -119,8 +119,8 @@ def getBatch(data, batch_size):
             useImg = False
             # Get random index in data and set steering value accordingly
             rint = np.random.randint(len(data)-1)
-            steeringValue = float(data[rint][steeringIndex])         
-            
+            steeringValue = float(data[rint][steeringIndex])
+
             # Check if steering is approx straight driving - We dont want to take them all...
             if -0.1 <= steeringValue <= 0.1:
                 if np.random.randint(10) == 1:
@@ -129,25 +129,25 @@ def getBatch(data, batch_size):
             # All images which are not as near 0.0 we will use
             else:
                 useImg = True
-            
-            if useImg:              
+
+            if useImg:
                 # Get random type of image. center, left or right image
                 rtype = np.random.randint(3)
-                
+
                 if rtype == 1: # Left image add offset
-                    steeringValue += .2
+                    steeringValue += .25
                 if rtype == 2: # Right image add offset
-                    steeringValue -= .2 
-                    
+                    steeringValue -= .25
+
                 batch_y[i] = steeringValue
                 batch_x[i] = resizeImg(cropTopBot(getImageToBatch(data[rint][rtype])))
-                
+
                 # Add random flip by axes images. Approx 1 of 5
                 if np.random.randint(5) == 1:
                     batch_x[i], batch_y[i] = flip(batch_x[i], batch_y[i])
 
                 # As we used the image i will increse by one
-                i += 1          
+                i += 1
 
         yield batch_x, batch_y
 
@@ -157,13 +157,13 @@ def main():
     path = '/data/driving_log.csv'
     training_data = prepareDataFromCSV(os.getcwd() + path)
     batch_size = 128
-    samples_per_epoch = batch_size * 220
-    nb_epoch = 20
+    samples_per_epoch = batch_size * 200
+    nb_epoch = 15
     print(" Training data from csv: {}".format(path))
     print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"
         .format(batch_size, nb_epoch, samples_per_epoch))
 
-    
+
     # To test without gpu
     #nb_epoch = 4
     #batch_size = 32
