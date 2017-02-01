@@ -122,8 +122,9 @@ def getBatch(data, batch_size):
             steeringValue = float(data[rint][steeringIndex])         
             
             # Check if steering is approx straight driving - We dont want to take them all...
-            if -0.1 <= steeringValue <= 0.1 and np.random.randint(10) == 1:
-                useImg = True
+            if -0.1 <= steeringValue <= 0.1:
+                if np.random.randint(10) == 1:
+                    useImg = True
 
             # All images which are not as near 0.0 we will use
             else:
@@ -142,7 +143,7 @@ def getBatch(data, batch_size):
                 batch_x[i] = resizeImg(cropTopBot(getImageToBatch(data[rint][rtype])))
                 
                 # Add random flip by axes images. Approx 1 of 5
-                if np.random.randint(5) == 1:
+                if np.random.randint(4) == 1:
                     batch_x[i], batch_y[i] = flip(batch_x[i], batch_y[i])
 
                 # As we used the image i will increse by one
@@ -171,23 +172,13 @@ def main():
     ## Get model and start training
     model = getCNN()
     # Compile the model with adam optimizer
-    adam = Adam(lr = 0.001, decay=1e-5)
+    adam = Adam(lr = 0.001, decay=0.0001)
     model.compile(optimizer=adam, loss="mse")
 
-    #print(model.summary())
-    ####### LOAD WEIGHTS ########
-        # Load weights if they exists.
-    #if os.path.isfile('model.h5'):
-    #   print('Loading weights!')
-    #   model.load_weights('model.h5')
-    from keras.callbacks import EarlyStopping, Callback
-    # set early stopping
-    es = EarlyStopping(monitor='loss', patience=3, verbose=0, mode='auto')
     history = model.fit_generator(
         getBatch(training_data, batch_size), 
         samples_per_epoch=samples_per_epoch,
-        nb_epoch=nb_epoch,
-	callbacks=[es])
+        nb_epoch=nb_epoch)
 
 
     # Save model.
