@@ -140,9 +140,9 @@ def getBatch(data, batch_size):
                 rtype = np.random.randint(3)
 
                 if rtype == 1: # Left image add offset
-                    steeringValue += 0.15
+                    steeringValue += 0.2
                 if rtype == 2: # Right image add offset
-                    steeringValue -= 0.15
+                    steeringValue -= 0.2
 
                 batch_y[i] = steeringValue
                 batch_x[i] = resizeImg(cropTopBot(randomBrightness(getImageToBatch(data[rint][rtype]))))
@@ -177,7 +177,7 @@ def main():
     ## Get model and start training
     model = getCNN()
     # Compile the model with adam optimizer
-    adam = Adam(lr = 0.001)
+    adam = Adam(lr = 0.0001)
     model.compile(optimizer=adam, loss="mse")
 
     history = model.fit_generator(
