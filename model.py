@@ -162,8 +162,8 @@ def main():
     path = '/data/driving_log.csv'
     training_data = prepareDataFromCSV(os.getcwd() + path)
     batch_size = 128
-    samples_per_epoch = batch_size * 220
-    nb_epoch = 12
+    samples_per_epoch = batch_size * 360
+    nb_epoch = 10
     print(" Training data from csv: {}".format(path))
     print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"
         .format(batch_size, nb_epoch, samples_per_epoch))
@@ -177,7 +177,7 @@ def main():
     ## Get model and start training
     model = getCNN()
     # Compile the model with adam optimizer
-    adam = Adam(lr = 0.0001)
+    adam = Adam(lr = 0.001)
     model.compile(optimizer=adam, loss="mse")
 
     history = model.fit_generator(
