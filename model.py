@@ -61,13 +61,13 @@ def getCNN():
     model.add(Dense(10))
     model.add(Activation('relu'))
     model.add(Dropout(0.3))
-    
+
     # Layer 9 - Fully-connected
     model.add(Dense(1))
-    
+
     return model
 
-        
+
 # Flip images by axis and steering angle
 def flip(image, angle):
     flippedImg = cv2.flip(image,1)
@@ -116,7 +116,7 @@ def prepareDataFromCSV(path):
 
 def getBatch(data, batch_size):
     steeringIndex = 3
-    while 1:    
+    while 1:
         batch_x = np.zeros((batch_size, 66, 200, 3))
         batch_y = np.zeros(batch_size)
         i = 0
@@ -163,7 +163,7 @@ def main():
     training_data = prepareDataFromCSV(os.getcwd() + path)
     batch_size = 128
     samples_per_epoch = batch_size * 100
-    nb_epoch = 20
+    nb_epoch = 40
     print(" Training data from csv: {}".format(path))
     print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"
         .format(batch_size, nb_epoch, samples_per_epoch))
