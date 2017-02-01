@@ -15,11 +15,11 @@ from keras.utils import np_utils
 
 import matplotlib.pyplot as plt
 
-# Return the model. 
+# Return the model.
 # Working with Nvidia network architecture with some tweaks.
 # https://devblogs.nvidia.com/parallelforall/deep-learning-self-driving-cars/
 def getCNN():
-    
+
     model = Sequential()
 
     # Noramlization
@@ -127,7 +127,7 @@ def getBatch(data, batch_size):
             steeringValue = float(data[rint][steeringIndex])
 
             # Check if steering is approx straight driving - We dont want to take them all...
-            if -0.1 <= steeringValue <= 0.1:
+            if -0.15 <= steeringValue <= 0.15:
                 if np.random.randint(10) == 1:
                     useImg = True
 
@@ -140,15 +140,15 @@ def getBatch(data, batch_size):
                 rtype = np.random.randint(3)
 
                 if rtype == 1: # Left image add offset
-                    steeringValue += .15
+                    steeringValue += 0.2
                 if rtype == 2: # Right image add offset
-                    steeringValue -= .15
+                    steeringValue -= 0.2
 
                 batch_y[i] = steeringValue
                 batch_x[i] = resizeImg(cropTopBot(randomBrightness(getImageToBatch(data[rint][rtype]))))
 
                 # Add random flip by axes images. Approx 1 of 5
-                if np.random.randint(5) == 1:
+                if np.random.randint(2) == 1:
                     batch_x[i], batch_y[i] = flip(batch_x[i], batch_y[i])
 
                 # As we used the image i will increse by one
@@ -162,8 +162,8 @@ def main():
     path = '/data/driving_log.csv'
     training_data = prepareDataFromCSV(os.getcwd() + path)
     batch_size = 128
-    samples_per_epoch = batch_size * 100
-    nb_epoch = 40
+    samples_per_epoch = batch_size * 75
+    nb_epoch = 25
     print(" Training data from csv: {}".format(path))
     print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"
         .format(batch_size, nb_epoch, samples_per_epoch))
