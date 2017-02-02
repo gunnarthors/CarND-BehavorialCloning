@@ -127,7 +127,7 @@ def getBatch(data, batch_size):
             steeringValue = float(data[rint][steeringIndex])
 
             # Check if steering is approx straight driving - We dont want to take them all...
-            if -0.15 <= steeringValue <= 0.15:
+            if -0.1 <= steeringValue <= 0.1:
                 if np.random.randint(10) == 1:
                     useImg = True
 
@@ -140,23 +140,27 @@ def getBatch(data, batch_size):
                 rtype = np.random.randint(3)
 
                 if rtype == 1: # Left image add offset
-                    steeringValue += 0.2
+                    steeringValue += 0.15
                 if rtype == 2: # Right image add offset
-                    steeringValue -= 0.2
+                    steeringValue -= 0.15
 
                 batch_y[i] = steeringValue
                 batch_x[i] = resizeImg(cropTopBot(randomBrightness(getImageToBatch(data[rint][rtype]))))
 
                 # Add random flip by axes images. Approx 1 of 5
-                if np.random.randint(2) == 1:
+                if steeringValue < -0.2:
+                    randFlip = np.random.randint(2)
+                else:
+                    randFlip = np.random.randint(4)
+                if randFlip == 0:
                     batch_x[i], batch_y[i] = flip(batch_x[i], batch_y[i])
 
                 # Test to  use more images with right turn
                 # so if left turn in image use it as well with flip to right turn
-                if steeringValue < -0.2:
-                    if i < batch_size - 2:
-                        batch_x[i+1], batch_y[i+1] = flip(batch_x[i], batch_y[i])
-                        i += 1
+                #if steeringValue < -0.2:
+                #    if i < batch_size - 2:
+                #        batch_x[i+1], batch_y[i+1] = flip(batch_x[i], batch_y[i])
+                #        i += 1
 
                 # As we used the image i will increse by one
                 i += 1
@@ -169,8 +173,8 @@ def main():
     path = '/data/driving_log.csv'
     training_data = prepareDataFromCSV(os.getcwd() + path)
     batch_size = 128
-    samples_per_epoch = batch_size * 75
-    nb_epoch = 35
+    samples_per_epoch = batch_size * 220
+    nb_epoch = 12
     print(" Training data from csv: {}".format(path))
     print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"
         .format(batch_size, nb_epoch, samples_per_epoch))
@@ -184,7 +188,7 @@ def main():
     ## Get model and start training
     model = getCNN()
     # Compile the model with adam optimizer
-    adam = Adam(lr = 0.001)
+    adam = Adam(lr = 0.0001)
     model.compile(optimizer=adam, loss="mse")
 
     history = model.fit_generator(
