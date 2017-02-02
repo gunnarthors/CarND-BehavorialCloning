@@ -147,7 +147,7 @@ def getBatch(data, batch_size):
                 batch_y[i] = steeringValue
                 batch_x[i] = resizeImg(cropTopBot(randomBrightness(getImageToBatch(data[rint][rtype]))))
 
-                # Add random flip by axes images. Approx 1 of 5
+                # Add random flip by axes images. Approx 1 of 4 but if left turn lower randomness
                 if steeringValue < -0.2:
                     randFlip = np.random.randint(2)
                 else:
@@ -156,11 +156,11 @@ def getBatch(data, batch_size):
                     batch_x[i], batch_y[i] = flip(batch_x[i], batch_y[i])
 
                 # Test to  use more images with right turn
-                # so if left turn in image use it as well with flip to right turn
-                #if steeringValue < -0.2:
-                #    if i < batch_size - 2:
-                #        batch_x[i+1], batch_y[i+1] = flip(batch_x[i], batch_y[i])
-                #        i += 1
+                # so if big  left turn in image use it as well with flip to right turn
+                elif steeringValue < -0.4:
+                    if i < batch_size - 2:
+                        batch_x[i+1], batch_y[i+1] = flip(batch_x[i], batch_y[i])
+                        i += 1
 
                 # As we used the image i will increse by one
                 i += 1
