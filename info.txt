@@ -3,3 +3,9 @@ source activate CarND-project3
 
 Deactivate anaconda env:
 source deactivate CarND-project3
+
+Track1:
+https://youtu.be/Ra0yGH6kIks
+
+Track2:
+https://youtu.be/oeF3Puq1MT0
