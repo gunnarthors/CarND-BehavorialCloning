@@ -8,10 +8,6 @@ from keras.layers import Dense, Dropout, Flatten, Activation
 from keras.layers.core import Lambda
 from keras.layers.convolutional import Convolution2D
 from keras.optimizers import Adam
-from keras.layers.pooling import MaxPooling2D
-from keras.layers.normalization import BatchNormalization
-from keras.preprocessing.image import ImageDataGenerator, img_to_array, load_img
-from keras.utils import np_utils
 from keras.callbacks import ModelCheckpoint, TensorBoard
 
 import matplotlib.pyplot as plt
@@ -148,20 +144,10 @@ def getBatch(data, batch_size):
                 batch_y[i] = steeringValue
                 batch_x[i] = resizeImg(cropTopBot(randomBrightness(getImageToBatch(data[rint][rtype]))))
 
-                # Add random flip by axes images. Approx 1 of 4 but if left turn lower randomness
-                #if steeringValue < -0.2:
-                #    randFlip = np.random.randint(2)
                 #else:
                 randFlip = np.random.randint(4)
                 if randFlip == 0:
                     batch_x[i], batch_y[i] = flip(batch_x[i], batch_y[i])
-
-                # Test to  use more images with right turn
-                # so if big  left turn in image use it as well with flip to right turn
-                #elif steeringValue < -0.4:
-                #    if i < batch_size - 2:
-                #        batch_x[i+1], batch_y[i+1] = flip(batch_x[i], batch_y[i])
-                #        i += 1
 
                 # As we used the image i will increse by one
                 i += 1
@@ -179,12 +165,6 @@ def main():
     print(" Training data from csv: {}".format(path))
     print(" Batch size: {} \n Number of epochs: {} \n Samples per epoch {}"
         .format(batch_size, nb_epoch, samples_per_epoch))
-
-
-    # To test without gpu
-    #nb_epoch = 4
-    #batch_size = 32
-    #samples_per_epoch = 36*10
 
     ## Get model
     model = getCNN()
